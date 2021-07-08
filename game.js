@@ -112,11 +112,6 @@ class vector {
 
 class straightLine {
     constructor(point1, element) {
-        /*  Straight lines can be definied two ways : 
-            - by two points : in that case, element must be a point
-            - by a point and a director vector, in that case, element must be a vector.
-            In all the case, a straightLine has only two moints attributes. If defined by a vector, the constructor
-            compute the other point*/
 
         if (element instanceof point) {
             if (!point1.equal(element)) {
@@ -250,20 +245,7 @@ class polygon {
     /*  SAT algorithm. Be carefull : work only for convex polygons*/
 
     static separation(other, edge, barycenter) {
-        /*  Considers a polygon with barycenter "barycenter", and "other" another polygone. Suppose
-            that edge is an edge of the first polygon. Separation methode return true if the straightLine with direction
-            edge separte the two polygones. To do that : 
-            - we consider the equation of the line generate by edge : ax+by+c = 0
-            - we replace x and y by coordinate of the barycenter and get a number A
-            - for all points of other, we replace x and y by point coordinates and get numbers B1,... Bn
-            
-            - If A = 0, it means that the first polygone is a segment. In that case, edge separate other if
-            all B1,...,Bn have the same sign.
-            - if A != 0, the edge seprate the polygones if B1,...,Bn have same sign, and that sign is different of A
-            
-            In some situations, we can have one or two of the B1,...,Bn which are = 0. Never more, because, it would say 
-            that three points of other are align. In that case, if Bk beloongs to edge, or the segment [Bk, Bl] have
-            non null intersection with edge, one have found common points for the two polygons, and they are not separate*/
+
 
         let otherNbVertices = other.vertices.length ;
         let segmentLine = new straightLine(edge.point1, edge.point2) ;
@@ -314,15 +296,7 @@ class polygon {
     }
 
     sat(other) {
-    /*  Separating Axes Theorem (S. Gottschalk. Separating axis theorem. Technical Report TR96-024,Department
-        of Computer Science, UNC Chapel Hill, 1996) : 
-            Two convex polytopes are disjoint iff there exists a separating axis orthogonal 
-            to a face of either polytope or orthogonal to an edge from each polytope.
-            
-        Our version of sat can also sepate segments which are degenerate polygons.
 
-        Be carrefull : work only for convex polygons.
-     */
 
         let thisEdges = this.edges() ;
         let otherEdges = other.edges() ;
@@ -353,18 +327,9 @@ class polygon {
 }
 
 class square extends polygon {
-    /*  A square extend polygon class. Square attributes are
-        - a set of 4 points
-        - a center : the barycenter of the square 
-        - a direction which is polar coordinates of the first edge of the square.
-        Two last attribute are commod in order to rotate the square according to its center.*/
+
     constructor(element1, element2) {
-        /*  there is tw way to constructs a square : 
-            - Given the coordinates of the two limit point of one of its edge. In this case, the other point 
-            are construct in direct order : edge 2 direction is edge 1 direction rotate from pi/2
-            - given its center and the polar coordinates of one of its edge. In this case, the other point 
-            are construct in direct order : edge 2 direction is edge 1 direction rotate from pi/2. polar coordinate
-            is an array of a positive number (the length of the edge), and an angle in randiant*/
+
         let point1 ;
         let point2 ;
         let point3 ;
@@ -475,20 +440,6 @@ class square extends polygon {
 
 }
 
-/*****************************************************************************************
- *  Games elements classes 
- * 
- *  I have organize the game in three principal elements : 
- *  - the heros element : on class which contains all the method of hero
- *  - the grid element which contain all elements about the level. There is more than one 
- *    class : some small class for element as peak or platform, and a class grid
-/*****************************************************************************************
-
-    /*  Hero
-    
-        One classe which contains all methods to manage the hero. It espaciallycontains method
-        move which compute new position of the hero after a frame.
-    */
 
 class hero {
     
@@ -520,25 +471,6 @@ class hero {
             let foot2 = new polygon([footPoint1.copy(), footPoint3]) ;
             this.foot = [foot1, foot2] ;
         } 
-
-        /*  Physical attributes 
-
-            Those parameters are computed in order the hero do a jump of xJump unity heigh and yJump unity long. 
-            We use classical newtonian physic for the trajectories which says that he gravity center of the hero 
-            follow the next trajectory (with t=0 as begning of a jump)
-                x(t) = vx * t
-                y(t) = -1/2*g*t^2 + vy0 * t + y0
-            where 
-                - vx is the horizontal speed or the hero : in the game it is a constant, so no need to take vx(0)
-                - g id the gravitional constant
-                - vy0 is the initial vertical speed when jump.
-                - y0 is the initial y coordinate of the center of the hero
-            This formula work equaly when the hero fall from a bloc (in that case vz0=0) and when the hero is on a 
-            bloc (in that case, g and vy0 = 0).
-            
-            On the game, vx is fixed, and we choose g and vy0 so that a jump is xJump long and yJump height. 
-            xJump and yJump are fixed too
-        */
 
         this.vx = vx ; // horizontal speed of the hero
         this.vy0 = vy0 ; // vertical speed. when jump :  (2*this.zJump)/((this.xJump/(2*this.vx))
@@ -596,12 +528,6 @@ class hero {
     }
 
     footContactWithRoof(previousFoot, platformInstance) {
-        /*  Compute collision to know if the hero has land. The hero land on a platform if its foots have collisioned (do that word exists ?)
-            with platforms roof (see class plateform). However, because the game is not continuous but dicrete, and 
-            that roof and foot are lines, it could arive that at t, foot is above a roof and a t+1, it is below. In that
-            case, the game will consider there is no collision. To avoid that. We construct a footPolygon which is the 
-            polygon obtain by contatenate previous foot position and next foot position. Thank to that, if
-            footPolygon have collision wich the roof, it means that bettween t and t+1, the hero have land on the roof. */
 
         let cpt = 0 ; // if at the end cpt > 0, there is a contact
 
@@ -631,24 +557,6 @@ class hero {
     }
 
     move(gridInstance) {
-        /*  The gravity center of the hero follow the next trajectory (with t=0 as begning of a jump)
-                x(t) = vx * t
-                y(t) = -1/2*g*t^2 + vy0 * t + y0
-            where 
-                - vx is the horizontal speed or the hero : in the game it is a constant, so no need to take vx(0)
-                - g id the gravitaional constant
-                - vy0 is the initial vertical speed when jump.
-                - y0 is the initial y coordinate of the center of the hero
-            This formula work equaly when the hero fall from a bloc (in that case vz0=0) and when the heri is on a bloc (in that case, g and vy0 = 0).
-
-            On this methode, we consider finite diffrecne of this equation : y(t+dt) - y(t) and x(t+dt) - x(t). Because of the
-            quadratiq nature of equation 2, the time t still appears in equation for y, and so we can't keep only dt value, we 
-            need to use t.
-            
-            On the game, vx is fixed, and we choose g and vz0 so that a jump is xJump long and yJump height. xJump and zJump are fixed too
-
-            See grid class to know what is gridInstance
-            */
 
         let previousFoot = [] ;
         this.foot.forEach(foot => {
@@ -832,16 +740,7 @@ class hero {
     */
 
 class platform {
-    /*  A platform is 
-         -  a square of edge length 1 and angle 0. 
-         -  the the roof which is the upper edge of the square. It is used to verify if the hero land on the platforme : 
-            the foot and the roof enter in collision, or not (in that case, if collision, it's game over)
-            
-        For each element one add col = floor(x-positon) attribute. Elements will 
-        be organized on a grid which is an array. In array cell n, we will place all 
-        element which col = n. That way, it is easy to get all element of the neibourhood
-        of the hero to test collisions
-    */
+
     constructor(x, y) {
         /* x,y are the coordinates of the lowest leftest point of the platform */
         this.col = Math.floor(x) ;
@@ -852,13 +751,7 @@ class platform {
 }
 
 class peak {
-    /*  peak is a triangle. There is 4 kind of peak according to there orientation.
-        
-        For each element one add col = floor(x-positon) attribute. Elements will 
-        be organized on a grid which is an array. In array cell n, we will place all 
-        element which col = n. That way, it is easy to get all element of the neibourhood
-        of the hero to test collisions
-    */
+
     constructor(x, y, orientation) {
         /* x, y are the coordinates of the lowest leftest point of the square in which the triangle is inscribed */
         let point1, point2, point3 ;
@@ -892,14 +785,7 @@ class peak {
 }
 
 class ending {
-    /*  Ending is a unique element which indicate the end of the level
-        
-        For each element one add col = floor(x-positon) attribute. Elements will 
-        be organized on a grid which is an array. In array cell n, we will place all 
-        element which col = n. That way, it is easy to get all element of the neibourhood
-        of the hero to test collisions
-    */
-    constructor(position) {
+ructor(position) {
         /* Ending hitbox is a rectangle horizontal of width 1 and height 10. Position is the abscissa of left edge  */
         let point1 = new point(position, 0) ;
         let point2 = new point(position+1, 0) ;
@@ -912,13 +798,7 @@ class ending {
 }
 
 class checkPoint {
-    /*  checkPoints are elemnt places by the gamer to save the state of the game
-        
-        For each element one add col = floor(x-positon) attribute. Elements will 
-        be organized on a grid which is an array. In array cell n, we will place all 
-        element which col = n. That way, it is easy to get all element of the neibourhood
-        of the hero to test collisions
-    */
+
     constructor(heroInstance) {
         /*  the position of the checkpoint depends of the position of the hero */
         this.x = heroInstance.body.center.x ;
@@ -934,11 +814,7 @@ class checkPoint {
 }
 
 class grid {
-    /*  grid is a discretisation of the level. All element have a col value which is the floor of there x-position.
-         Those element will be organized on the grid which is an array. In array cell n, we will place all element
-        which col = n. That way, it is easy to get all element of the neibourhood
-        of the hero to test collisions*/
-     
+
     constructor() {
         /* by default a grid is empty, we add element using methodes */
         this.grid = [] ;
@@ -1003,20 +879,11 @@ class grid {
     }
 }
 
-/*****************************************************************************************
- *  Drawing part
- * 
- *  Gather all classes which be used to draw ths game
-*****************************************************************************************/
 
 class backGround {
-    /*  Background is what is draw on background. lol */
     constructor() {
         this.city = document.getElementById("city") ; 
         this.cityReverse = document.getElementById("city-reverse") ;
-            //  There is two png for the background decor. they are the same but reverse in order
-            //  do an horizontal scrolling whith continuity in decor. When arrive at the end 
-            //  of one, the other is plot with not dicontinuity
         this.t = 0 ;
             //  time from the begning of the game : use to move the background
     }
